@@ -2,15 +2,14 @@ const express = require("express");
 const { default: mongoose } = require("mongoose");
 const path = require("path");
 const app = express();
+const setMongo = require("./setting");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 mongoose.set("strictQuery", false);
 mongoose
-  .connect(
-    `mongodb+srv://nit:Nit220802@cluster0.gv1lgie.mongodb.net/?retryWrites=true&w=majority`
-  )
+  .connect(setMongo)
   .then(() => {
     console.log("mongoDB connected");
   })
