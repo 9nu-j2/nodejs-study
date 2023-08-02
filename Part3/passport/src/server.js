@@ -1,4 +1,6 @@
+const cookieSession = require("cookie-session");
 const express = require("express");
+const { read } = require("fs");
 const { default: mongoose } = require("mongoose");
 const passport = require("passport");
 const path = require("path");
@@ -6,6 +8,29 @@ const { nextTick } = require("process");
 const User = require("./models/users.model");
 const app = express();
 const setMongo = require("./setting");
+
+const cookieEncryptionKey = "supersecret-key";
+
+app.use(
+  cookieSession({
+    name: "cookiesessionname",
+    keys: [cookieEncryptionKey],
+  })
+);
+
+app.use(function (req, res, next) {
+  if (req.session && !req.session.regenerate) {
+    req.session.regenerate = (cb) => {
+      cb();
+    };
+  }
+  if (req.session && !req.session.save) {
+    req.session.save = (cb) => {
+      cb();
+    };
+  }
+  next();
+});
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -29,11 +54,15 @@ mongoose
 
 app.use("/static", express.static(path.join(__dirname, "public"))); // 정작 파일 웹 제공, 절대경로로 제공
 
+app.get("/", (req, res) => {
+  res.render("index");
+});
+
 app.get("/login", (req, res) => {
   res.render("login");
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", (req, res, next) => {
   // 로그인 전략 사용. local, google, facebook 등
   passport.authenticate("local", (err, user, info) => {
     if (err) {
@@ -44,13 +73,14 @@ app.post("/login", (req, res) => {
       return res.json({ msg: info });
     }
 
+    // 로그인 성공시 세션 생성
     req.logIn(user, function (err) {
       if (err) {
         return next(err);
       }
       res.redirect("/");
     });
-  });
+  })(req, res, next);
 });
 
 app.get("/signup", (req, res) => {
