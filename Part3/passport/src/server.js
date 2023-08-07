@@ -8,6 +8,10 @@ const { nextTick } = require("process");
 const User = require("./models/users.model");
 const app = express();
 const setMongo = require("./setting");
+const {
+  checkAuthenticated,
+  checkNotAuthenticated,
+} = require("./middlewares/auth");
 
 const cookieEncryptionKey = "supersecret-key";
 
@@ -54,11 +58,11 @@ mongoose
 
 app.use("/static", express.static(path.join(__dirname, "public"))); // 정작 파일 웹 제공, 절대경로로 제공
 
-app.get("/", (req, res) => {
+app.get("/", checkAuthenticated, (req, res) => {
   res.render("index");
 });
 
-app.get("/login", (req, res) => {
+app.get("/login", checkNotAuthenticated, (req, res) => {
   res.render("login");
 });
 
@@ -83,6 +87,15 @@ app.post("/login", (req, res, next) => {
   })(req, res, next);
 });
 
+app.post("/logout", (req, res, next) => {
+  req.logOut(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/login");
+  });
+});
+
 app.get("/signup", (req, res) => {
   res.render("signup");
 });
@@ -91,6 +104,13 @@ app.post("/signup", async (req, res) => {
   // user 객체를 생성합니다
   const user = new User(req.body);
   // user 컬렉션에 유저를 비동기로 저장합니다
+
+  // {
+  //   email: 'test1@naver.com',
+  //   password: 'asdfasdfasdf',
+  //   _id: Object(dfasdgasdg)
+  // }
+
   try {
     await user.save();
     return res.status(200).json({

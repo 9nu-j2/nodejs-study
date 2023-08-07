@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-// const bcrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 
 const userSchema = mongoose.Schema({
   email: {
@@ -16,15 +16,30 @@ const userSchema = mongoose.Schema({
   },
 });
 
-userSchema.method.comparePassword = function (plainPassword, cb) {
-  // bcrypt 비교 원래는 해줘야함
-  // plain password => client, this.password => 데이터베이스에 있는 비밀번호
-  if (plainPassword === this.passwod) {
-    cb(null, true);
-  } else {
-    cb(null, false);
+const saltRounds = 10;
+userSchema.pre("save", function (next) {
+  let user = this;
+  // 비밀번호가 변경될 때만
+  if (user.isModified("password")) {
+    // salt 생성
+    bcrypt.genSalt(saltRounds, function (err, salt) {
+      if (err) return next(err);
+      bcrypt.hash(user.password, salt, function (err, hash) {
+        if (err) return next(err);
+        user.password = hash;
+        next();
+      });
+    });
   }
-  return cb({ error: "error" });
+});
+
+userSchema.method.comparePassword = function (plainPassword, cb) {
+  // plain password => client, this.password => 데이터베이스에 있는 비밀번호
+  // 비교용 bcrypt 함수
+  bcrypt.compare(plainPassword, this.password, function (err, isMatch) {
+    if (err) return cb(err);
+    cb(null, isMatch);
+  });
 };
 
 const User = mongoose.model("User", userSchema);
