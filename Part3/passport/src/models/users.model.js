@@ -35,7 +35,7 @@ userSchema.pre("save", function (next) {
   }
 });
 
-userSchema.method.comparePassword = function (plainPassword, cb) {
+userSchema.methods.comparePassword = function (plainPassword, cb) {
   // plain password => client, this.password => 데이터베이스에 있는 비밀번호
   // 비교용 bcrypt 함수
   bcrypt.compare(plainPassword, this.password, function (err, isMatch) {

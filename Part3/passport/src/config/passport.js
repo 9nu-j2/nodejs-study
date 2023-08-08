@@ -10,14 +10,13 @@ const localStrategyConfig = new LocalStrategy(
     User.findOne({
       email: email.toLocaleLowerCase(),
     })
-      .then((err, user) => {
+      .then((user, err) => {
+        console.log(user.comparePassword);
         if (!user) {
           return done(null, false, { msg: `Email ${email} not found` });
         }
-
         user.comparePassword(password, (err, isMatch) => {
           if (err) return done(err);
-
           if (isMatch) {
             return done(null, user);
           }
@@ -41,7 +40,6 @@ const googleStrategyConfig = new GoogleStrategy(
     User.findOne({ googleId: profile.id })
       .then((existingUser) => {
         if (existingUser) {
-          console.log(existingUser);
           return done(null, existingUser);
         } else {
           const user = new User();
