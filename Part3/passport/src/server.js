@@ -7,13 +7,15 @@ const path = require("path");
 const { nextTick } = require("process");
 const User = require("./models/users.model");
 const app = express();
-const setMongo = require("./setting");
+const { setMongo } = require("./setting");
 const {
   checkAuthenticated,
   checkNotAuthenticated,
 } = require("./middlewares/auth");
 
 const cookieEncryptionKey = "supersecret-key";
+
+require("dotenv").config();
 
 app.use(
   cookieSession({
@@ -121,7 +123,19 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-const port = 4000;
-app.listen(port, () => {
-  console.log(`listening on ${port}`);
+// 구글 인증 관련 미들웨어
+app.get("/auth/google", passport.authenticate("google"));
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    successReturnToOrRedirect: "/",
+    failureRedirect: "/login",
+  })
+);
+
+const config = require("config");
+const serverconfig = config.get("server");
+
+app.listen(serverconfig.port, () => {
+  console.log(`listening on ${serverconfig.port}`);
 });
