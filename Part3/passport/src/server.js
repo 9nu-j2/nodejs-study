@@ -1,19 +1,13 @@
 const cookieSession = require("cookie-session");
 const express = require("express");
-const { read } = require("fs");
 const { default: mongoose } = require("mongoose");
 const passport = require("passport");
 const path = require("path");
-const { nextTick } = require("process");
 const User = require("./models/users.model");
 const app = express();
-const { setMongo } = require("./setting");
-const {
-  checkAuthenticated,
-  checkNotAuthenticated,
-} = require("./middlewares/auth");
 
 require("dotenv").config();
+// 라우터 설정용
 const mainRouter = require("./routes/main.router");
 const usersRouter = require("./routes/users.router");
 
