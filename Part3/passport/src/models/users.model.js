@@ -13,6 +13,12 @@ const userSchema = mongoose.Schema({
   googleId: {
     type: String,
     unique: true,
+    spars: true,
+  },
+  kakaoId: {
+    type: String,
+    unique: true,
+    spars: true,
   },
 });
 

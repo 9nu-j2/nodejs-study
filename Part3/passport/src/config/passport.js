@@ -2,7 +2,7 @@ const passport = require("passport");
 const User = require("../models/users.model");
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const { googleClientID, googleCluentSecret } = require("../setting");
+const KakaoStrategy = require("passport-kakao").Strategy;
 
 const localStrategyConfig = new LocalStrategy(
   { usernameField: "email", passwordField: "password" },
@@ -31,8 +31,8 @@ const localStrategyConfig = new LocalStrategy(
 
 const googleStrategyConfig = new GoogleStrategy(
   {
-    clientID: googleClientID,
-    clientSecret: googleCluentSecret,
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "/auth/google/callback",
     scope: ["email", "profile"],
   },
@@ -45,6 +45,34 @@ const googleStrategyConfig = new GoogleStrategy(
           const user = new User();
           user.email = profile.emails[0].value;
           user.googleId = profile.id;
+          user
+            .save()
+            .then(done(null, user))
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+);
+
+const kakaoStrategyConfig = new KakaoStrategy(
+  {
+    clientID: process.env.KAKAO_CLIENT_ID,
+    callbackURL: "/auth/kakao/callback",
+  },
+  (accessToken, refreshToken, profile, done) => {
+    User.findOne({ kakaoId: profile.id })
+      .then((existingUser, err) => {
+        if (existingUser) {
+          return done(null, existingUser);
+        } else {
+          const user = new User();
+          user.kakaoId = profile.id;
+          user.email = profile._json.kakao_account.email;
           user
             .save()
             .then(done(null, user))
@@ -72,3 +100,5 @@ passport.deserializeUser((id, done) => {
 passport.use("local", localStrategyConfig);
 
 passport.use("google", googleStrategyConfig);
+
+passport.use("kakao", kakaoStrategyConfig);
