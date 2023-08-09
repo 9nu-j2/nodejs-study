@@ -34,8 +34,8 @@ const sendMail = (to, name, type) => {
   const transporter = mailer.createTransporter({
     service: "Gmail",
     auth: {
-      user: "유저 이메일 아이디",
-      pass: "구글에서 새로 생성한 비밀번호",
+      user: "jungu269@gmail.com",
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 
