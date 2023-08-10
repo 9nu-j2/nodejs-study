@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const { default: mongoose } = require("mongoose");
 const PORT = 4000;
 
 const usersRouter = require("./routes/users.router");
@@ -17,6 +18,17 @@ app.get("/", (req, res) => {
 });
 
 app.use(express.json()); // body parser 대체 내장 모듈
+
+// mongoDB 연결
+mongoose.set("strictQuery", false);
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("mongoDB connected");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
 app.use((req, res, next) => {
   const start = Date.now();
