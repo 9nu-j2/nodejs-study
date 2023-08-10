@@ -4,6 +4,7 @@ const PORT = 4000;
 
 const usersRouter = require("./routes/users.router");
 const postsRouter = require("./routes/posts.router");
+const productsRouter = require("./routes/products.router");
 const app = express();
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views")); // 템플릿 엔진 서버 등록
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 
 app.use("/users", usersRouter);
 app.use("/posts", postsRouter);
+app.use("/product", productsRouter);
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}...`);
